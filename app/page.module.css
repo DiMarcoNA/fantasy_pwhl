@@ -1,0 +1,224 @@
+.page {
+  min-height: 100vh;
+  background: #f7f7f8;
+  color: #17171a;
+}
+
+/* Header */
+
+.header {
+  height: 72px;
+  padding: 0 6%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border-bottom: 1px solid #e5e5e7;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.nav {
+  display: flex;
+  gap: 10px;
+}
+
+.nav button {
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.signIn {
+  background: transparent;
+  color: #17171a;
+}
+
+.signUp {
+  background: #17171a;
+  color: white;
+}
+
+/* Hero */
+
+.hero {
+  padding: 100px 20px 110px;
+  text-align: center;
+  background: white;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #66666d;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(42px, 7vw, 80px);
+  line-height: 1;
+  letter-spacing: -4px;
+}
+
+.draftDate {
+  margin: 22px 0 45px;
+  color: #66666d;
+  font-size: 16px;
+}
+
+.draftNtote {
+  margin: 0 0 45px;
+  color: #66666d;
+  font-size: 16px;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.timeBox {
+  min-width: 125px;
+  padding: 24px 18px;
+  background: #f1f1f3;
+  border-radius: 10px;
+}
+
+.timeBox span {
+  display: block;
+  font-size: 48px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -2px;
+}
+
+.timeBox label {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #66666d;
+}
+
+/* Updates */
+
+.updates {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 90px 25px;
+}
+
+.sectionHeader {
+  margin-bottom: 45px;
+}
+
+.sectionHeader h2 {
+  margin: 0 0 10px;
+  font-size: 36px;
+  letter-spacing: -1.5px;
+}
+
+.sectionHeader > p:last-child {
+  margin: 0;
+  color: #66666d;
+}
+
+.updateList {
+  display: flex;
+  flex-direction: column;
+}
+
+.update {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 30px;
+  padding: 28px 0;
+  border-top: 1px solid #dcdcdf;
+}
+
+.update:last-child {
+  border-bottom: 1px solid #dcdcdf;
+}
+
+.updateDate {
+  font-size: 13px;
+  color: #77777e;
+}
+
+.update h3 {
+  margin: 0 0 7px;
+  font-size: 19px;
+}
+
+.update p {
+  margin: 0;
+  color: #66666d;
+  line-height: 1.6;
+}
+
+/* Footer */
+
+.footer {
+  padding: 35px 6%;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid #e5e5e7;
+  background: white;
+  color: #77777e;
+  font-size: 12px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .header {
+    padding: 0 20px;
+  }
+
+  .logo {
+    font-size: 16px;
+  }
+
+  .nav button {
+    padding: 9px 12px;
+  }
+
+  .hero {
+    padding: 70px 15px 80px;
+  }
+
+  .hero h1 {
+    letter-spacing: -2px;
+  }
+
+  .timeBox {
+    min-width: 75px;
+    padding: 18px 10px;
+  }
+
+  .timeBox span {
+    font-size: 32px;
+  }
+
+  .update {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .footer {
+    flex-direction: column;
+  }
+}
