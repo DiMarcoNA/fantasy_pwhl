@@ -1,3 +1,4 @@
+import { TURBOPACK_CLIENT_MIDDLEWARE_MANIFEST } from "next/dist/shared/lib/constants";
 
 const HOCKEYTECH_BASE_URL =
   'https://lscluster.hockeytech.com/feed/index.php';
@@ -206,4 +207,108 @@ export async function getSeasons(): Promise<PwhlSeason[]> {
 }
 
 
+export interface PwhlGame {
+  id: string;
+  seasonId: string;
+  date: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  status: string;
+}
 
+interface HockeyTechScheduleResponse {
+  SiteKit?: {
+    Schedule?: Array<{
+      game_id: string;
+      season_id: string;
+      date_played: string;
+      home_team: string;
+      visiting_team: string;
+      home_goal_count: string | null;
+      visiting_goal_count: string | null;
+      status: string;
+    }>;
+  };
+}
+
+/**
+ * Fetch the PWHL schedule for a HockeyTech season.
+ */
+export async function getSchedule(
+  seasonId: number,
+  teamId?: number 
+): Promise<PwhlGame[]> {
+  const params = new URLSearchParams({
+    feed: 'modulekit',
+    view: 'schedule',
+    season_id: seasonId.toString(),
+    key: HOCKEYTECH_KEY,
+    client_code: CLIENT_CODE,
+  });
+
+  if (teamId) {
+    params.set('team_id', teamId.toString());
+  }
+
+  const url = `${HOCKEYTECH_BASE_URL}?${params.toString()}`;
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(
+      `HockeyTech request failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  let text = await response.text();
+
+  // HockeyTech may return JSON or JSONP.
+  if (text.startsWith('angular.callbacks.')) {
+    const firstParen = text.indexOf('(');
+    const lastParen = text.lastIndexOf(')');
+
+    if (firstParen === -1 || lastParen === -1) {
+      throw new Error(
+        'Unexpected HockeyTech response format: invalid JSONP'
+      );
+    }
+
+    text = text.slice(firstParen + 1, lastParen);
+  }
+
+  let data: HockeyTechScheduleResponse;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error('HockeyTech returned invalid JSON');
+  }
+
+  const schedule = data.SiteKit?.Schedule;
+  //console.log(schedule);
+
+  if (!Array.isArray(schedule)) {
+    throw new Error(
+      'Unexpected HockeyTech response: Schedule array was not found'
+    );
+  }
+
+  return schedule.map((game) => ({
+    id: game.game_id,
+    seasonId: game.season_id,
+    date: game.date_played,
+    homeTeamId: game.home_team,
+    awayTeamId: game.visiting_team,
+    homeScore:
+      game.home_goal_count !== null
+        ? Number(game.home_goal_count)
+        : null,
+    awayScore:
+      game.visiting_goal_count !== null
+        ? Number(game.visiting_goal_count)
+        : null,
+    status: game.status,
+  }));
+}
