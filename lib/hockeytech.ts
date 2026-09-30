@@ -45,11 +45,11 @@ export interface PwhlSeason {
 /**
  * Fetch all PWHL teams from HockeyTech.
  */
-export async function getTeams(): Promise<PwhlTeam[]> {
+export async function getTeams(season_id: number): Promise<PwhlTeam[]> {
   const params = new URLSearchParams({
     feed: 'statviewfeed',
     view: 'teamsForSeason',
-    season: PWHL_SEASON_ID,
+    season: season_id.toString(),
     key: HOCKEYTECH_KEY,
     client_code: CLIENT_CODE,
     site_id: SITE_ID,
@@ -204,4 +204,6 @@ export async function getSeasons(): Promise<PwhlSeason[]> {
     };
   });
 }
+
+
 
