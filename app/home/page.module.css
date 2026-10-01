@@ -1,0 +1,198 @@
+.page {
+    min-height: 100vh;
+    background: #f7f7f8;
+    color: #17171a;
+  }
+  
+  /* Header */
+  
+  .header {
+    height: 72px;
+    padding: 0 6%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border-bottom: 1px solid #e5e5e7;
+  }
+  
+  .logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  
+  .nav {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .nav button {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .myLeague {
+    background: transparent;
+    color: #17171a;
+  }
+  
+  .navLinks {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  
+  .nav a {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .signOut {
+    background: #17171a;
+    color: white;
+  }
+  
+  .navLinks a:hover {
+    color: #666;
+  }
+  
+  
+  /* Main content */
+  
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 50px 24px;
+  }
+  
+  .title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+  }
+  
+  /* Cards */
+  
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 24px;
+  
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  
+  .card h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  
+  .placeholder {
+    color: #666;
+    margin-bottom: 20px;
+  }
+  
+  .placeholderButton {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+  
+    background: #222;
+    color: white;
+  
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .placeholderButton:hover {
+    background: #444;
+  }
+
+  /* Feedback Modal */
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    padding: 20px;
+    z-index: 1000;
+  }
+  
+  .modal {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+  
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+  
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+  
+  .modal h2 {
+    margin: 0 0 10px;
+    font-size: 24px;
+  }
+  
+  .modalDescription {
+    margin: 0 0 20px;
+    color: #66666d;
+    line-height: 1.5;
+  }
+  
+  .closeButton {
+    position: absolute;
+    top: 15px;
+    right: 18px;
+  
+    border: none;
+    background: transparent;
+  
+    font-size: 28px;
+    line-height: 1;
+    color: #66666d;
+  
+    cursor: pointer;
+  }
+  
+  .closeButton:hover {
+    color: #17171a;
+  }
+  
+  .feedbackInput {
+    width: 100%;
+    min-height: 150px;
+  
+    padding: 12px;
+    margin-bottom: 20px;
+  
+    border: 1px solid #dcdcdf;
+    border-radius: 8px;
+  
+    font-family: inherit;
+    font-size: 14px;
+  
+    resize: vertical;
+  }
+  
+  .feedbackInput:focus {
+    outline: none;
+    border-color: #99999f;
+  }
