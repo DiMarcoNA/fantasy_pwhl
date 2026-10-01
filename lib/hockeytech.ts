@@ -1,4 +1,10 @@
-import { TURBOPACK_CLIENT_MIDDLEWARE_MANIFEST } from "next/dist/shared/lib/constants";
+import {
+  PwhlTeam,
+  PwhlPlayer,
+  PwhlGame,
+  PwhlPlayerGameStats,
+  PwhlGameStatus,
+} from '@/types/pwhl';
 
 const HOCKEYTECH_BASE_URL =
   'https://lscluster.hockeytech.com/feed/index.php';
@@ -8,39 +14,22 @@ const CLIENT_CODE = 'pwhl';
 const SITE_ID = '2';
 const PWHL_SEASON_ID = '2';
 
-export interface PwhlTeam {
+
+
+
+interface HockeyTechTeam {
   id: string;
   name: string;
   nickname: string;
-  teamCode: string;
-  divisionId: string;
+  city: string;
+  team_code: string;
   logo: string;
 }
 
 
 interface HockeyTechTeamsResponse {
-  teamsNoAll: Array<{
-    id: string;
-    name: string;
-    nickname: string;
-    team_code: string;
-    division_id: string;
-    logo: string;
-  }>;
+  teamsNoAll: HockeyTechTeam[];
 }
-
-
-export interface PwhlSeason {
-  id: string;
-  name: string;
-  shortName: string;
-  career: boolean;
-  playoff: boolean;
-  startDate: string | null;
-  endDate: string | null;
-}
-
-
 
 
 /**
@@ -102,121 +91,18 @@ export async function getTeams(season_id: number): Promise<PwhlTeam[]> {
     );
   }
 
-  return data.teamsNoAll.map((team) => ({
-    id: team.id,
+  const normalizedTeams: PwhlTeam[] = data.teamsNoAll.map((team) => ({
+    hockeytechId: Number(team.id),
     name: team.name,
-    nickname: team.nickname,
-    teamCode: team.team_code,
-    divisionId: team.division_id,
-    logo: team.logo,
+    abbreviation: team.team_code,
+    city: team.city,
+    logoUrl: team.logo,
   }));
+  
+  return normalizedTeams;
+
 }
 
-
-
-/**
- * Fetch all PWHL seasons from HockeyTech.
- *
- * HockeyTech returns seasons under:
- *
- * {
- *   "SiteKit": {
- *     "Seasons": [...]
- *   }
- * }
- */
-export async function getSeasons(): Promise<PwhlSeason[]> {
-  const params = new URLSearchParams({
-    feed: 'modulekit',
-    view: 'seasons',
-    key: HOCKEYTECH_KEY,
-    client_code: CLIENT_CODE,
-  });
-
-  const url = `${HOCKEYTECH_BASE_URL}?${params.toString()}`;
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(
-      `HockeyTech request failed: ${response.status} ${response.statusText}`
-    );
-  }
-
-  const responseText = await response.text();
-
-  let jsonText = responseText.trim();
-
-  // Handle JSONP if HockeyTech wraps the response.
-  const jsonpMatch = jsonText.match(
-    /^[^(]+\(([\s\S]*)\);?$/
-  );
-
-  if (jsonpMatch) {
-    jsonText = jsonpMatch[1];
-  }
-
-  let data: {
-    SiteKit?: {
-      Seasons?: Array<{
-        season_id?: string | number;
-        season_name?: string;
-        shortname?: string;
-        career?: string | number;
-        playoff?: string | number;
-        start_date?: string;
-        end_date?: string;
-      }>;
-    };
-  };
-
-  try {
-    data = JSON.parse(jsonText);
-  } catch (error) {
-    throw new Error(
-      'HockeyTech returned invalid JSON',
-      { cause: error }
-    );
-  }
-
-  const seasons = data.SiteKit?.Seasons;
-
-  if (!Array.isArray(seasons)) {
-    throw new Error(
-      'Unexpected HockeyTech response: SiteKit.Seasons was not found'
-    );
-  }
-
-  return seasons.map((season) => {
-    if (season.season_id === undefined || !season.season_name) {
-      throw new Error(
-        'Unexpected HockeyTech season format: missing season ID or name'
-      );
-    }
-
-    return {
-      id: String(season.season_id),
-      name: season.season_name,
-      shortName: season.shortname ?? season.season_name,
-      career: String(season.career ?? '0') === '1',
-      playoff: String(season.playoff ?? '0') === '1',
-      startDate: season.start_date ?? null,
-      endDate: season.end_date ?? null,
-    };
-  });
-}
-
-
-export interface PwhlGame {
-  id: string;
-  seasonId: string;
-  date: string;
-  homeTeamId: string;
-  awayTeamId: string;
-  homeScore: number | null;
-  awayScore: number | null;
-  status: string;
-}
 
 interface HockeyTechScheduleResponse {
   SiteKit?: {
@@ -295,20 +181,166 @@ export async function getSchedule(
     );
   }
 
+
   return schedule.map((game) => ({
-    id: game.game_id,
-    seasonId: game.season_id,
-    date: game.date_played,
-    homeTeamId: game.home_team,
-    awayTeamId: game.visiting_team,
+    hockeytechId: Number(game.game_id),
+    seasonHockeytechId: Number(game.season_id),
+    homeTeamHockeytechId: Number(game.home_team),
+    awayTeamHockeytechId: Number(game.visiting_team),
+  
     homeScore:
       game.home_goal_count !== null
         ? Number(game.home_goal_count)
-        : null,
+        : 0,
+  
     awayScore:
       game.visiting_goal_count !== null
         ? Number(game.visiting_goal_count)
-        : null,
-    status: game.status,
+        : 0,
+  
+    scheduledStart: game.date_played,
+    status: normalizeGameStatus(game.status),
   }));
+}
+
+interface HockeyTechRosterPlayer {
+  player_id: string;
+  first_name: string;
+  last_name: string;
+  position: string;
+  team_id: string;
+}
+
+interface HockeyTechRosterStaff {
+  id: string;
+  first_name: string;
+  last_name: string;
+  name: string;
+  team_id: string;
+  role_id: string;
+  role: string;
+  person_id: string;
+  jersey_number: string;
+  start_date: string;
+  end_date: string;
+  is_admin: string;
+  division: string;
+}
+
+interface HockeyTechRosterResponse {
+  SiteKit: {
+    Roster: (
+      | HockeyTechRosterPlayer
+      | HockeyTechRosterStaff[]
+    )[];
+  };
+}
+
+/**
+ * Fetch all PWHL players for a season from HockeyTech.
+ */
+export async function getPlayers(
+  seasonId: number
+): Promise<PwhlPlayer[]> {
+  const teams = await getTeams(seasonId);
+  const normalizedPlayers: PwhlPlayer[] = [];
+
+  for (const team of teams) {
+    const params = new URLSearchParams({
+      feed: 'modulekit',
+      view: 'roster',
+      team_id: team.hockeytechId.toString(),
+      season_id: seasonId.toString(),
+      key: HOCKEYTECH_KEY,
+      client_code: CLIENT_CODE,
+      site_id: SITE_ID,
+      callback: 'angular.callbacks._4',
+    });
+
+    const url = `${HOCKEYTECH_BASE_URL}?${params.toString()}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(
+        `HockeyTech roster request failed for team ${team.hockeytechId}: ` +
+        `${response.status} ${response.statusText}`
+      );
+    }
+
+    const responseText = await response.text();
+    const prefix = 'angular.callbacks._4(';
+
+    if (!responseText.startsWith(prefix)) {
+      throw new Error(
+        `Unexpected HockeyTech roster response format for team ${team.hockeytechId}`
+      );
+    }
+
+    let jsonText = responseText.slice(prefix.length);
+
+    if (jsonText.endsWith(');')) {
+      jsonText = jsonText.slice(0, -2);
+    } else if (jsonText.endsWith(')')) {
+      jsonText = jsonText.slice(0, -1);
+    }
+
+    let data: HockeyTechRosterResponse;
+
+    try {
+      data = JSON.parse(jsonText);
+    } catch (error) {
+      throw new Error(
+        `HockeyTech returned invalid roster JSON for team ${team.hockeytechId}`,
+        { cause: error }
+      );
+    }
+
+    if (!Array.isArray(data.SiteKit?.Roster)) {
+      throw new Error(
+        `Unexpected HockeyTech roster response for team ${team.hockeytechId}: ` +
+        `Roster was not found`
+      );
+    }
+
+    // Roster contains player objects followed by a nested array of staff.
+    const players = data.SiteKit.Roster.filter(
+      (item): item is HockeyTechRosterPlayer => !Array.isArray(item)
+    );
+
+    for (const player of players) {
+      normalizedPlayers.push({
+        hockeytechId: Number(player.player_id),
+        firstName: player.first_name,
+        lastName: player.last_name,
+        position: player.position,
+        currentTeamHockeytechId: Number(player.team_id),
+      });
+    }
+  }
+
+  return normalizedPlayers;
+}
+
+
+
+function normalizeGameStatus(status: string): PwhlGameStatus {
+  switch (status) {
+    case '1':
+      return PwhlGameStatus.Scheduled;
+
+    case '2':
+      return PwhlGameStatus.InProgress;
+
+    case '3':
+      return PwhlGameStatus.Final;
+
+    case '4':
+      return PwhlGameStatus.Postponed;
+
+    case '5':
+      return PwhlGameStatus.Cancelled;
+
+    default:
+      throw new Error(`Unknown HockeyTech game status: ${status}`);
+  }
 }

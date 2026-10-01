@@ -1,55 +1,127 @@
-import { getSeasons } from './hockeytech.js';
-import { getTeams } from './hockeytech.js';
-import { getSchedule } from './hockeytech.js';
+import {
+  getTeams,
+  getSchedule,
+  getPlayers,
+} from './hockeytech';
 
-async function testHockeyTechSeasons() {
+const SEASON_ID = 2;
+
+async function main() {
+  console.log('========================================');
+  console.log('       HockeyTech Client Test');
+  console.log('========================================');
+  console.log(`Season ID: ${SEASON_ID}`);
+  console.log();
+
   try {
-    const seasons = await getSeasons();
+    // --------------------------------------------------
+    // Teams
+    // --------------------------------------------------
 
-    console.log('PWHL seasons:');
-    seasons.forEach(({id, name}) => {
-      console.log('season id: ' + id + ', name: ' + name);
-    });
-    //console.log(seasons);
-    return {seasons};
+    console.log('--- TEAMS ---');
+
+    const teams = await getTeams(SEASON_ID);
+
+    console.log(`Found ${teams.length} teams`);
+    console.log();
+
+    for (const team of teams) {
+      console.log(
+        `${team.hockeytechId}: ${team.name} (${team.abbreviation}) - ${team.city}`
+      );
+    }
+
+    console.log();
+
+    // --------------------------------------------------
+    // Schedule
+    // --------------------------------------------------
+
+    console.log('--- SCHEDULE ---');
+
+    const games = await getSchedule(SEASON_ID);
+
+    console.log(`Found ${games.length} games`);
+    console.log();
+
+    // Print the first 5 games
+    const gamesToPrint = games.slice(0, 5);
+
+    for (const game of gamesToPrint) {
+      const homeTeam = teams.find(
+        (team) => team.hockeytechId === game.homeTeamHockeytechId
+      );
+
+      const awayTeam = teams.find(
+        (team) => team.hockeytechId === game.awayTeamHockeytechId
+      );
+
+      console.log(`Game ${game.hockeytechId}`);
+      console.log(
+        `  ${awayTeam?.name ?? `Team ${game.awayTeamHockeytechId}`} ` +
+        `vs ` +
+        `${homeTeam?.name ?? `Team ${game.homeTeamHockeytechId}`}`
+      );
+      console.log(`  Start: ${game.scheduledStart}`);
+      console.log(`  Score: ${game.awayScore} - ${game.homeScore}`);
+      console.log(`  Status: ${game.status}`);
+      console.log();
+    }
+
+    // --------------------------------------------------
+    // Players
+    // --------------------------------------------------
+
+    console.log('--- PLAYERS ---');
+
+    const players = await getPlayers(SEASON_ID);
+
+    console.log(`Found ${players.length} players`);
+    console.log();
+
+    // Print the first 10 players
+    const playersToPrint = players.slice(0, 10);
+
+    for (const player of playersToPrint) {
+      const team = teams.find(
+        (team) =>
+          team.hockeytechId === player.currentTeamHockeytechId
+      );
+
+      console.log(
+        `${player.hockeytechId}: ` +
+        `${player.firstName} ${player.lastName} ` +
+        `(${player.position})`
+      );
+
+      console.log(
+        `  Team: ${team?.name ?? `Team ${player.currentTeamHockeytechId}`}`
+      );
+
+      console.log();
+    }
+
+    // --------------------------------------------------
+    // Summary
+    // --------------------------------------------------
+
+    console.log('--- SUMMARY ---');
+    console.log(`Teams:   ${teams.length}`);
+    console.log(`Games:   ${games.length}`);
+    console.log(`Players: ${players.length}`);
+    console.log();
+
+    console.log('========================================');
+    console.log('          Test completed');
+    console.log('========================================');
   } catch (error) {
-    console.error('HockeyTech request failed:');
+    console.error();
+    console.error('========================================');
+    console.error('             TEST FAILED');
+    console.error('========================================');
     console.error(error);
-  }
-
-
-}
-
-async function testHockeyTechTeams(season: number, season_name: string) {
-  try {
-    const teams = await getTeams(season);
-
-    console.log('PWHL teams for ' + season_name + '(hockeyteach season id:' + season + ') :');
-    teams.forEach(({name, id}) => {
-      console.log(id + ': ' + name);
-    });
-    //console.log(teams)
-  } catch (error){
-    console.error('HockeyTech request failed:');
-    console.error(error);
+    process.exit(1);
   }
 }
 
-async function testHockeyTechSchedule(season_id: number, team_id: number) {
-  try {
-    const schedule = await getSchedule(season_id, team_id)
-    console.log('schedule for ' + team_id + ' in season ' + season_id + ': ')
-    console.log(schedule)
-  } catch (error){
-    console.error('HockeyTech request failed:');
-    console.error(error);
-  }
-}
-
-
-const seasons = testHockeyTechSeasons();
-const season_id = Math.floor((Math.random() * 11) + 1);
-//const season_name = seasons.find((season) => season.id == season_id).name;
-const teams = testHockeyTechTeams(season_id, "placeholder");
-const team_id = Math.floor((Math.random() * 4) + 1);
-const schedule = testHockeyTechSchedule(season_id, team_id);
+main();
