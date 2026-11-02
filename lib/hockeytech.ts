@@ -16,7 +16,7 @@ const PWHL_SEASON_ID = '2';
 
 
 
-
+//this is how the hockeytech response is structured, inside the teamsNoAll array response
 interface HockeyTechTeam {
   id: string;
   name: string;
@@ -103,7 +103,7 @@ export async function getTeams(season_id: number): Promise<PwhlTeam[]> {
 
 }
 
-
+//schedule response is from sitekit, uses the following format, array of games
 interface HockeyTechScheduleResponse {
   SiteKit?: {
     Schedule?: Array<{
@@ -203,6 +203,7 @@ export async function getSchedule(
   }));
 }
 
+//how hockeytech returns players in a alist of rosters
 interface HockeyTechRosterPlayer {
   player_id: string;
   first_name: string;
@@ -211,6 +212,7 @@ interface HockeyTechRosterPlayer {
   team_id: string;
 }
 
+//not used, but roster response also returns staff so the declaration is important
 interface HockeyTechRosterStaff {
   id: string;
   first_name: string;
@@ -227,6 +229,7 @@ interface HockeyTechRosterStaff {
   division: string;
 }
 
+//overall format of roster response
 interface HockeyTechRosterResponse {
   SiteKit: {
     Roster: (
@@ -323,6 +326,11 @@ export async function getPlayers(
 
 
 
+/*
+  Hockeytech uses an integer for game status, we want to also deal with integers 
+  but for readability and future development, much easier to also declare an interface 
+  that defines those types in the project
+*/
 function normalizeGameStatus(status: string): PwhlGameStatus {
   switch (status) {
     case '1':
