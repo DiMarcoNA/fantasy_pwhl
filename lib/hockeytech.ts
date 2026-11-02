@@ -210,6 +210,8 @@ interface HockeyTechRosterPlayer {
   last_name: string;
   position: string;
   team_id: string;
+  shoots: string;
+  birthdate: string;
 }
 
 //not used, but roster response also returns staff so the declaration is important
@@ -316,6 +318,8 @@ export async function getPlayers(
         firstName: player.first_name,
         lastName: player.last_name,
         position: player.position,
+        shoots: player.shoots,
+        birthdate: player.birthdate,
         currentTeamHockeytechId: Number(player.team_id),
       });
     }

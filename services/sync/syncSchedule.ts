@@ -7,7 +7,7 @@ export async function syncSchedule() {
     const teams_map = await createTeamMap();
     const season_map = await createSeasonMap();
 
-    //get teams from hockeytech
+    //get games from hockeytech
     const games = await getSchedule(1);
 
     //map hockeytech response into a format that matches our db

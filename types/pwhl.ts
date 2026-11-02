@@ -11,6 +11,8 @@ export interface PwhlTeam {
     firstName: string;
     lastName: string;
     position: string;
+    birthdate: string;
+    shoots: string;
     currentTeamHockeytechId: number;
   }
   
