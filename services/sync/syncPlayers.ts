@@ -16,9 +16,21 @@ export async function syncPlayers() {
         shoots: player.shoots,
     }));
 
+    console.log(
+      "Players fetched:",
+      player_rows.length
+    );
+    
+    console.log(
+      "Unique IDs:",
+      new Set(
+        player_rows.map(p => p.hockeytech_id)
+      ).size
+    );
+
     //upsert into database
     const {error} = await supabaseAdmin
-    .from("players")
+    .from("player")
     .upsert(player_rows, {
         onConflict: "hockeytech_id",
       });

@@ -324,8 +324,18 @@ export async function getPlayers(
       });
     }
   }
+  const uniquePlayers = Array.from(
+    new Map(
+      normalizedPlayers.map(player => [
+        player.hockeytechId,
+        player,
+      ])
+    ).values()
+  );
+  
+  return uniquePlayers;
 
-  return normalizedPlayers;
+  
 }
 
 
