@@ -54,7 +54,6 @@ export async function syncSchedule() {
   };
 
 
-
 export async function createTeamMap() {
     const { data: teams } = await supabaseAdmin
     .from("pwhl_team")
