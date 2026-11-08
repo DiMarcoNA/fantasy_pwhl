@@ -1,6 +1,10 @@
 import {getTeams} from "@/lib/hockeytech"
 import {supabaseAdmin} from "@/utils/supabase/admin"
+import { runSync, SyncResult } from "@/utils/sync/runSync"
+
 export async function syncTeams() {
+  return runSync("season_teams", async () => {
+
     console.log("Starting to sync teams ..............");
 
     //get teams from hockeytech
@@ -27,5 +31,16 @@ export async function syncTeams() {
     }
 
     console.log(`Synced ${team_rows.length} teams.`);
+
+    if (error) throw error;
+
+    return {
+      recordsProcessed: teams.length,
+      metadata: {
+        teamCount: teams.length,
+      },
+    };
+  
+    });
   
   }

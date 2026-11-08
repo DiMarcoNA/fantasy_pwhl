@@ -1,6 +1,10 @@
 import {getSchedule} from "@/lib/hockeytech"
 import {supabaseAdmin} from "@/utils/supabase/admin"
+import { runSync } from "@/utils/sync/runSync"
+
 export async function syncSchedule() {
+    return runSync("season_games", async () => {
+
     console.log("Starting to sync schedule ..............");
 
     //create a map from hockeytech id to db id
@@ -35,6 +39,18 @@ export async function syncSchedule() {
 
     console.log(`Synced ${game_rows.length} games.`);
   
+    if (error) throw error;
+
+    return {
+      recordsProcessed: game_rows.length,
+      metadata: {
+        gamesProcessed: game_rows.length,
+      },
+    };
+  
+    });
+
+
   };
 
 
