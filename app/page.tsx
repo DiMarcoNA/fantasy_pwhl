@@ -7,17 +7,18 @@ const DRAFT_DATE = new Date("2026-11-15T12:00:00-05:00").getTime();
 
 const updates = [
   {
+    date: "October 1, 2026",
+    title: "Users can create profiles",
+    description:
+      "Long awaited! Users can now create their own profiles on the app, and see their user homepage. (Happy Birthday Dad!!)",
+  },
+  {
     date: "September 6, 2026",
     title: "Project Started",
     description:
       "The PWHL Fantasy League website is officially under development!",
   },
-  {
-    date: "Coming Soon",
-    title: "More Updates",
-    description:
-      "Player data, league creation, drafting, scoring, and more are on the way.",
-  },
+  
 ];
 
 function getTimeRemaining() {
@@ -41,13 +42,20 @@ function getTimeRemaining() {
 }
 
 export default function Home() {
-  const [time, setTime] = useState(getTimeRemaining());
+  const [time, setTime] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
   useEffect(() => {
+    setTime(getTimeRemaining());
+  
     const timer = setInterval(() => {
       setTime(getTimeRemaining());
     }, 1000);
-
+  
     return () => clearInterval(timer);
   }, []);
 
@@ -57,15 +65,16 @@ export default function Home() {
         <div className={styles.logo}>PWHL FANTASY</div>
 
         <nav className={styles.nav}>
-          <button className={styles.signIn}>Sign In</button>
-          <button className={styles.signUp}>Create Account</button>
+          <button><Link href='/login' className={styles.signIn}>Sign In</Link></button>
+          <button className={styles.signUp}><Link href='/signup' >Create Account</Link></button>
+          
         </nav>
       </header>
 
       <section className={styles.hero}>
         <p className={styles.eyebrow}>DRAFT DAY</p>
 
-        <h1>Hello Sydney. Let the Draft Begin.</h1>
+        <h1>Let the Draft Begin.</h1>
 
         <p className={styles.draftDate}>
           November 15, 2026 · 12:00 PM ET
