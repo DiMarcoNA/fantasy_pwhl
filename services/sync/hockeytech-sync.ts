@@ -23,5 +23,5 @@ export async function dailyLeagueSync() {
 
 export async function postGameSync() {
     await syncStats();
-    await syncGameScores();
+    await syncSchedule();
 }

@@ -43,8 +43,37 @@ export interface PwhlTeam {
     assists: number;
     pim: number;
     plusMinus: number;
-    toi: number;
+    hits: number;
+    blockedShots: number;
+    ppg: number;
+    shg: number;
+  }
+
+  export interface PwhlGoalieGameStats {
+    hockeytechPlayerId: number;
+    hockeytechGameId: number;
+    hockeytechTeamId: number;
+    goals: number;
+    assists: number;
+    pim: number;
+    ppg: number;
+    shg: number;
     saves: number;
     shotsFaced: number;
     goalsAllowed: number;  
+  }
+
+  export interface PwhlGameStatsSummary {
+    hockeytechGameId: number;
+    hockeytechHomeTeamId: number;
+    hockeytechAwayTeamId: number;
+    status: number;
+    homeGoalCount: number;
+    awayGoalCount: number;
+  }
+
+  export interface GameSummary {
+    meta: PwhlGameStatsSummary;
+    goalies: PwhlGoalieGameStats[];
+    players: PwhlPlayerGameStats[];
   }

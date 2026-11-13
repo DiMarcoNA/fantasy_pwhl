@@ -1,9 +1,12 @@
+import { PwhlGameStatsSummary } from '../types/pwhl';
 import {
   PwhlTeam,
   PwhlPlayer,
   PwhlGame,
   PwhlPlayerGameStats,
+  PwhlGoalieGameStats,
   PwhlGameStatus,
+  GameSummary,
 } from '@/types/pwhl';
 
 const HOCKEYTECH_BASE_URL =
@@ -338,7 +341,195 @@ export async function getPlayers(
   
 }
 
+interface HockeyTechGameSummaryMeta {
+  id: string;
+  league_id: string;
+  home_team: string;
+  visiting_team: string;
+  status: string;
+  home_goal_count: string;
+  visiting_goal_count: string;
+}
 
+interface HockeyTechGameSummaryPlayer {
+  player_id: string;
+  goals: string;
+  assists: string;
+  plusminus: string;
+  pim: string;
+  hits: string;
+  shots_on: string;
+  power_play_goals: string;
+  short_handed_goals: string;
+  game_winning_goal: string;
+  shots_blocked_by_player: string;
+}
+
+interface HockeyTechGameSummaryGoalies {
+  player_id: string;
+  goals: string;
+  assists: string;
+  saves: string;
+  goals_against: string;
+  win: string;
+  loss: string;
+  tie: string;
+  shutout: string;
+  shots_against: string;
+  pim: string;
+  power_play_goals: string;
+  short_handed_goals: string;
+  game_winning_goal: string;
+
+}
+
+
+interface HockeyTechGameSummaryResponse {
+  GC: {
+    Gamesummary: {
+      meta: HockeyTechGameSummaryMeta;
+      goalies: {
+        visitor: HockeyTechGameSummaryGoalies[];
+        home: HockeyTechGameSummaryGoalies[];
+      };
+      home_team_lineup: {
+        players: HockeyTechGameSummaryPlayer[];
+      };
+      visitor_team_lineup: {
+        players: HockeyTechGameSummaryPlayer[];
+      };
+
+    }
+  }
+}
+
+
+export async function getGameStats(
+  game_id: number
+): Promise<GameSummary> {
+  const params = new URLSearchParams({
+    feed: 'gc',
+    tab: 'gamesummary',
+    key: HOCKEYTECH_KEY,
+    game_id: game_id.toString(),
+    client_code: CLIENT_CODE,
+    site_id: SITE_ID,
+    callback: 'angular.callbacks._4',
+  });
+
+  const url = `${HOCKEYTECH_BASE_URL}?${params.toString()}`;
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(
+      `HockeyTech request failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const responseText = await response.text();
+
+  const prefix = 'angular.callbacks._4(';
+
+  if (!responseText.startsWith(prefix)) {
+    throw new Error(
+      'Unexpected HockeyTech response format: JSONP wrapper not found'
+    );
+  }
+
+  let jsonText = responseText.slice(prefix.length);
+
+  if (jsonText.endsWith(');')) {
+    jsonText = jsonText.slice(0, -2);
+  } else if (jsonText.endsWith(')')) {
+    jsonText = jsonText.slice(0, -1);
+  }
+
+  let data: HockeyTechGameSummaryResponse;
+  
+  try {
+    data = JSON.parse(jsonText);
+  } catch (error) {
+    throw new Error(
+      'HockeyTech returned invalid JSON',
+      { cause: error }
+    );
+  }
+
+  const metaResponse = data.GC.Gamesummary.meta;
+
+  const loadGameMeta: PwhlGameStatsSummary = {
+    hockeytechGameId: Number(metaResponse.id),
+    hockeytechHomeTeamId: Number(metaResponse.home_team),
+    hockeytechAwayTeamId: Number(metaResponse.visiting_team),
+    status: Number(metaResponse.status),
+    homeGoalCount: Number(metaResponse.home_goal_count),
+    awayGoalCount: Number(metaResponse.visiting_goal_count),
+  };
+  
+  const loadHomeGoalieStats: PwhlGoalieGameStats[] = data.GC.Gamesummary.goalies.visitor.map((goalie) => ({
+    hockeytechPlayerId: Number(goalie.player_id),
+    hockeytechGameId: Number(metaResponse.id),
+    hockeytechTeamId: Number(metaResponse.visiting_team),
+    goals: Number(goalie.goals),
+    assists: Number(goalie.assists),
+    pim: Number(goalie.pim),
+    ppg: Number(goalie.power_play_goals),
+    shg: Number(goalie.short_handed_goals),
+    saves: Number(goalie.saves),
+    shotsFaced: Number(goalie.shots_against),
+    goalsAllowed: Number(goalie.goals_against),
+  }));
+
+  const loadAwayGoalieStats: PwhlGoalieGameStats[] = data.GC.Gamesummary.goalies.home.map((goalie) => ({
+    hockeytechPlayerId: Number(goalie.player_id),
+    hockeytechGameId: Number(metaResponse.id),
+    hockeytechTeamId: Number(metaResponse.home_team),
+    goals: Number(goalie.goals),
+    assists: Number(goalie.assists),
+    pim: Number(goalie.pim),
+    ppg: Number(goalie.power_play_goals),
+    shg: Number(goalie.short_handed_goals),
+    saves: Number(goalie.saves),
+    shotsFaced: Number(goalie.shots_against),
+    goalsAllowed: Number(goalie.goals_against),
+  }));
+
+  const loadHomePlayerStats: PwhlPlayerGameStats[] = data.GC.Gamesummary.home_team_lineup.players.map((player) => ({
+    hockeytechPlayerId: Number(player.player_id),
+    hockeytechGameId: Number(metaResponse.id),
+    hockeytechTeamId: Number(metaResponse.home_team),
+    goals: Number(player.goals),
+    assists: Number(player.assists),
+    pim: Number(player.pim),
+    plusMinus: Number(player.plusminus),
+    hits: Number(player.hits),
+    blockedShots: Number(player.shots_blocked_by_player),
+    ppg: Number(player.power_play_goals),
+    shg: Number(player.short_handed_goals)
+  }));
+
+  const loadAwayPlayerStats: PwhlPlayerGameStats[] = data.GC.Gamesummary.visitor_team_lineup.players.map((player) => ({
+    hockeytechPlayerId: Number(player.player_id),
+    hockeytechGameId: Number(metaResponse.id),
+    hockeytechTeamId: Number(metaResponse.visiting_team),
+    goals: Number(player.goals),
+    assists: Number(player.assists),
+    pim: Number(player.pim),
+    plusMinus: Number(player.plusminus),
+    hits: Number(player.hits),
+    blockedShots: Number(player.shots_blocked_by_player),
+    ppg: Number(player.power_play_goals),
+    shg: Number(player.short_handed_goals)
+  }));
+
+
+  return {
+    meta: loadGameMeta,
+    goalies: loadHomeGoalieStats.concat(loadAwayGoalieStats),
+    players: loadHomePlayerStats.concat(loadAwayPlayerStats)
+  };
+}
 
 /*
   Hockeytech uses an integer for game status, we want to also deal with integers 
